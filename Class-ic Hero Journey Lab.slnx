@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Class-ic Hero Journey Lab/Class-ic Hero Journey Lab.vcxproj" />
+</Solution>
