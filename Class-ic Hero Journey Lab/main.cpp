@@ -5,9 +5,13 @@
 #include <iostream>
 #include <cmath>
 #include <concepts>
+#include <cassert>
 
 #include <random>
 #include <string>
+
+
+// I learned this stuff from prior experience, I can explain it in-person if needed
 
 std::random_device Device{};
 std::mt19937 MtGen(Device());
@@ -27,6 +31,8 @@ T Random(T min, T max) {
 	}
 }
 
+enum class Result : uint8_t { Success, Failure, Neutral };
+
 class Hero {
 public:
 	 explicit Hero(std::string name) : name_(name), strength_(Random(1.0f, 5.0f)), courage_(Random(0.2f, 0.35f)) {}
@@ -38,7 +44,7 @@ public:
 	}
 
 	void AttendTherapy() noexcept {
-		courage_ += Random(1.0f, 2.0f);
+		addCourage(Random(1.0f, 2.0f));
 	}
 
 	// Properties
@@ -48,13 +54,8 @@ public:
 	}
 
 	[[nodiscard]]
-	float getRawStrength() const noexcept {
-		return strength_;
-	}
-
-	[[nodiscard]]
 	float getStrength() const noexcept {
-		return strength_ * (1 / courage_);
+		return strength_;
 	}
 
 	[[nodiscard]]
@@ -79,8 +80,6 @@ class Quest {
 public:
 	explicit Quest(int difficulty) : difficulty_(difficulty + Random(0, 1)) {}
 
-	enum class Result: uint8_t { Success, Failure, Neutral };
-
 	Result Start(Hero& hero) {
 		Result status = Start_(hero);
 
@@ -89,17 +88,17 @@ public:
 		switch (status) {
 
 		case Result::Success: {
-			std::cout << "WON!!!";
+			std::cout << "WON!!!\n";
 			break;
 		}
 
 		case Result::Neutral: {
-			std::cout << "resulted in a draw.";
+			std::cout << "resulted in a draw.\n";
 			break;
 		}
 
 		case Result::Failure: {
-			std::cout << "failed.";
+			std::cout << "failed.\n";
 			break;
 		}
 
@@ -112,22 +111,84 @@ private:
 
 	Result Start_(Hero& hero) {
 		if (difficulty_ > hero.getStrength()) {
-			hero.addCourage(-Random(0.05f, 0.35f));
-			return Random(0, 7) == 0 ? Result::Neutral : Result::Failure;
+			if (Random(0, 7) == 0) {
+				hero.addCourage(-Random(0.1f, 0.17f));
+				return Result::Neutral;
+			} 
+			else {
+				hero.addCourage(-Random(0.2f, 0.35f));
+				return Result::Failure;
+			}
 		}
 		else if (difficulty_ == hero.getStrength()) {
-			hero.addCourage(-Random(0.0f, 0.125f));
+			hero.addCourage(-Random(0.04f, 0.125f));
 			return Result::Neutral;
 		}
 		else {
-			hero.addCourage(Random(0.0f, 0.015f));
+			hero.addCourage(-Random(0.0f, 0.03f));
 			return Result::Success;
 		}
 	}
 };
 
+Result sendOnQuest(Hero& hero) {
+	Quest newQuest = Quest(Random(1, 5));
+
+	return newQuest.Start(hero);
+}
+
+void runTests() {
+
+	{
+		Hero dummy = Hero("Dummy");
+		float courage = dummy.getCourage();
+
+		dummy.AttendTherapy();
+
+		assert(dummy.getCourage() > courage);
+	}
+
+	{
+		Hero dummy("Dummy");
+		float strength = dummy.getStrength();
+
+		dummy.AttendTraining(2);
+
+		assert(dummy.getStrength() > strength);
+	}
+
+	{
+		Hero dummy("Dummy");
+
+		assert(dummy.getName() == "Dummy");
+	}
+
+	{
+		Hero dummy("Dummy");
+
+		dummy.setCourage(0.5f);
+
+		assert(dummy.getCourage() == 0.5f);
+	}
+
+}
+
 int main() {
-	const Hero bob = Hero("bob");
+	runTests();
 
+	Hero bob("Bob");
+	Hero alice("Alice");
+	Hero steve("Steve");
 
+	sendOnQuest(bob);
+	sendOnQuest(alice);
+	sendOnQuest(steve);
+
+	bob.AttendTraining(2);
+	alice.AttendTraining(1);
+	bob.AttendTherapy();
+
+	sendOnQuest(bob);
+	sendOnQuest(alice);
+	sendOnQuest(steve);
 }
