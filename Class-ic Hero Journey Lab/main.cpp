@@ -44,7 +44,7 @@ public:
 	}
 
 	void AttendTherapy() noexcept {
-		addCourage(Random(1.0f, 2.0f));
+		addCourage(Random(0.25f, 0.6f));
 	}
 
 	// Properties
